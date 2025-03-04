@@ -5,6 +5,7 @@ import (
 	"fmt"
 	. "learningGo/datastructures"
 	"os"
+	"path/filepath"
 )
 
 // le diretório com os arquivos estáticos a serem servidos e retorna um mapa com o nome do arquivo e seu conteúdo
@@ -23,6 +24,7 @@ func ReadContentDir() (map[string]string, error) {
 }
 */
 
+// lida com operações GET, le arquivos dos diretórios locais
 func getHandler(finalPath string) (string, error) {
 	bytes, err := os.ReadFile(finalPath)
 
@@ -37,10 +39,11 @@ func putHandler(finalPath string, content string) error {
 	return os.WriteFile(finalPath, []byte(content), os.FileMode(os.O_RDWR))
 }
 
-func RouteRequest(requestInfo RequestLine, requestBody string, contentType ContentType) (string, error) {
+func RouteRequest(requestInfo RequestLine, requestBody string) (string, error) {
 	var route string = requestInfo.EndPoint
 	var method HttpMethod = requestInfo.Method
-	var finalPath string = ".." + route
+	finalPath, _ := filepath.Abs("content/" + route)
+	fmt.Println(finalPath)
 
 	var err error
 	switch method {

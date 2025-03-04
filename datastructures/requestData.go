@@ -2,7 +2,7 @@ package datastructs
 
 import (
 	"errors"
-	"reflect"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -53,7 +53,6 @@ func defaultConnectionIsPersistant(httpVersion float64) bool {
 
 func ParseRequestHeaders(headers []string, httpVersion float64) (RequestHeaderLines, error) {
 	var err error
-	var numFields int = reflect.TypeOf(RequestHeaderLines{}).NumField()
 	var headerFields = map[string]string{}
 
 	for _, line := range headers { //criar mapa dos headers
@@ -63,27 +62,42 @@ func ParseRequestHeaders(headers []string, httpVersion float64) (RequestHeaderLi
 		headerFields[fieldKey] = fieldVal
 	}
 
-	if len(headers) == numFields || len(headers) == (numFields-1) { //O campo conexão é opcional
+	var connectionIsPersistant bool
+	connectAction, exists := headerFields["Connection"]
 
-		var connectionIsPersistant bool
-		connectAction, exists := headerFields["Connection"]
-
-		if !exists { //conexão não especificada, usar default
-			connectionIsPersistant = defaultConnectionIsPersistant(httpVersion)
-		} else if connectAction == "close" { //explicitada  para fechar conexão
-			connectionIsPersistant = false
-		} else { //explicitada  para manter conexão
-			connectionIsPersistant = true
-		}
-
-		return RequestHeaderLines{
-			Host:             headerFields["host"],
-			ConnectionPersis: connectionIsPersistant,
-			UserAgent:        headerFields["user-agent"],
-			AcceptLanguage:   headerFields["accept"],
-		}, err
-	} else {
-		return RequestHeaderLines{}, errors.New("não foi possível dar parsing nas linhas de header, o número de linhas não é compatível com o número de campos")
+	if !exists { //conexão não especificada, usar default
+		connectionIsPersistant = defaultConnectionIsPersistant(httpVersion)
+	} else if connectAction == "close" { //explicitada  para fechar conexão
+		connectionIsPersistant = false
+	} else { //explicitada  para manter conexão
+		connectionIsPersistant = true
 	}
 
+	return RequestHeaderLines{
+		Host:             headerFields["host"],
+		ConnectionPersis: connectionIsPersistant,
+		UserAgent:        headerFields["user-agent"],
+		AcceptLanguage:   headerFields["accept"],
+	}, err
+}
+
+func ParseMetadata(lines []string, lineBreakIndex int) (RequestLine, RequestHeaderLines, error) {
+	request, parseErr := ParseRequestLine(lines[0])
+
+	var headers RequestHeaderLines
+	var headersErr error
+	if lineBreakIndex != -1 {
+		headers, headersErr = ParseRequestHeaders(lines[1:lineBreakIndex], request.HttpVersion)
+	} else {
+		headers, headersErr = ParseRequestHeaders(lines[1:], request.HttpVersion)
+	}
+
+	if parseErr != nil {
+		return request, headers, fmt.Errorf("erro no parsing da linha de request: %v", parseErr.Error())
+	}
+	if headersErr != nil {
+		return request, headers, fmt.Errorf("erro no parsing dos headers: %v", headersErr.Error())
+	}
+
+	return request, headers, nil
 }
