@@ -2,29 +2,29 @@ package services
 
 import (
 	"fmt"
-	. "learningGo/datastructures"
+	datastructs "learningGo/datastructures"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
-func contentTypeFromExtension(fileExtension string) ContentType {
+func contentTypeFromExtension(fileExtension string) datastructs.ContentType {
 	switch fileExtension {
 	case ".txt":
-		return TextPlain
+		return datastructs.TextPlain
 	case ".html":
-		return TextHTML
+		return datastructs.TextHTML
 	default:
-		return TextPlain
+		return datastructs.TextPlain
 	}
 }
 
-func GetResponseType(route string) ContentType {
+func GetResponseType(route string) datastructs.ContentType {
 	fileExten := filepath.Ext(route)
 	return contentTypeFromExtension(fileExten)
 }
 
-func ErrorResponse(errorCode HttpError, httpVersion float64, responseType string) string {
+func ErrorResponse(errorCode datastructs.HttpError, httpVersion float64, responseType string) string {
 	var response = ""
 	var errorNum string = strings.Split(string(errorCode), " ")[0]
 	var errorName string = strings.Split(string(errorCode), " ")[1]

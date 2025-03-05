@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 	"io"
-	. "learningGo/datastructures"
+	datastructs "learningGo/datastructures"
 	"net"
 	"time"
 )
@@ -22,7 +22,7 @@ func StartServer() (net.Listener, error) {
 }
 
 // espera um cliente se conectar ao server e lida com ele, função para ser usada numa goroutine
-func HandleClient(listener net.Listener, channel chan Message) {
+func HandleClient(listener net.Listener, channel chan datastructs.Message) {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -42,6 +42,6 @@ func HandleClient(listener net.Listener, channel chan Message) {
 			}
 		}
 
-		channel <- Message{Data: data, Conn: conn}
+		channel <- datastructs.Message{Data: data, Conn: conn}
 	}
 }

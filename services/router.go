@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
-	. "learningGo/datastructures"
+	datastructs "learningGo/datastructures"
 	"os"
 	"path/filepath"
 )
@@ -40,17 +40,17 @@ func putHandler(finalPath string, content string) error {
 }
 
 // Faz o routing da request e tenta realizar a operação ditada pelo verbo HTTP, retornando uma string com o contéudo
-func RouteRequest(requestInfo RequestLine, requestBody string) ([]byte, error) {
+func RouteRequest(requestInfo datastructs.RequestLine, requestBody string) ([]byte, error) {
 	var route string = requestInfo.EndPoint
-	var method HttpMethod = requestInfo.Method
+	var method datastructs.HttpMethod = requestInfo.Method
 	finalPath, _ := filepath.Abs("content/" + route)
 
 	var err error
 	switch method {
-	case GET:
+	case datastructs.GET:
 		data, err := getHandler(finalPath)
 		return data, err
-	case PUT:
+	case datastructs.PUT:
 		err = putHandler(finalPath, requestBody)
 		return []byte{}, err
 	default:
