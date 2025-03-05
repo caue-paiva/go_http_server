@@ -5,7 +5,14 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"net"
 )
+
+
+type Message struct { //struct para uma mensagem do TCP-IP, com os dados transmitidos e a struct da conexão que passou os dados
+	Data []byte
+	Conn net.Conn
+}
 
 type RequestLine struct {
 	Method      HttpMethod

@@ -25,35 +25,36 @@ func ReadContentDir() (map[string]string, error) {
 */
 
 // lida com operações GET, le arquivos dos diretórios locais
-func getHandler(finalPath string) (string, error) {
+func getHandler(finalPath string) ([]byte, error) {
 	bytes, err := os.ReadFile(finalPath)
 
 	if err != nil {
-		return "", errors.New("falha ao responder a request get")
+		return []byte{}, errors.New("falha ao responder a request get")
 	}
 
-	return string(bytes), nil
+	return bytes, nil
 }
 
 func putHandler(finalPath string, content string) error {
 	return os.WriteFile(finalPath, []byte(content), os.FileMode(os.O_RDWR))
 }
 
-func RouteRequest(requestInfo RequestLine, requestBody string) (string, error) {
+// Faz o routing da request e tenta realizar a operação ditada pelo verbo HTTP, retornando uma string com o contéudo
+func RouteRequest(requestInfo RequestLine, requestBody string) ([]byte, error) {
 	var route string = requestInfo.EndPoint
 	var method HttpMethod = requestInfo.Method
 	finalPath, _ := filepath.Abs("content/" + route)
-	fmt.Println(finalPath)
 
 	var err error
 	switch method {
 	case GET:
-		return getHandler(finalPath)
+		data, err := getHandler(finalPath)
+		return data, err
 	case PUT:
 		err = putHandler(finalPath, requestBody)
-		return "", err
+		return []byte{}, err
 	default:
-		return "", fmt.Errorf("método http da request: %s, ainda não foi implementado", method)
+		return []byte{}, fmt.Errorf("método http da request: %s, ainda não foi implementado", method)
 	}
 
 }
