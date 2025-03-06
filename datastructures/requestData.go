@@ -3,15 +3,20 @@ package datastructs
 import (
 	"errors"
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
-	"net"
 )
 
-
 type Message struct { //struct para uma mensagem do TCP-IP, com os dados transmitidos e a struct da conexão que passou os dados
-	Data []byte
-	Conn net.Conn
+	Request RequestInfo
+	Conn    net.Conn
+}
+
+type RequestInfo struct {
+	FirstLine RequestLine
+	Headers   RequestHeaderLines
+	Body      string
 }
 
 type RequestLine struct {
@@ -25,6 +30,7 @@ type RequestHeaderLines struct {
 	ConnectionPersis bool
 	UserAgent        string
 	AcceptLanguage   string
+	ContentLen       int
 }
 
 func ParseRequestLine(requestLine string) (RequestLine, error) {
@@ -70,9 +76,9 @@ func ParseRequestHeaders(headers []string, httpVersion float64) (RequestHeaderLi
 	}
 
 	var connectionIsPersistant bool
-	connectAction, exists := headerFields["Connection"]
+	connectAction, ConnExists := headerFields["Connection"]
 
-	if !exists { //conexão não especificada, usar default
+	if !ConnExists { //conexão não especificada, usar default
 		connectionIsPersistant = defaultConnectionIsPersistant(httpVersion)
 	} else if connectAction == "close" { //explicitada  para fechar conexão
 		connectionIsPersistant = false
@@ -80,11 +86,24 @@ func ParseRequestHeaders(headers []string, httpVersion float64) (RequestHeaderLi
 		connectionIsPersistant = true
 	}
 
+	len, lenExists := headerFields["Content-Length"] //parsing no content len
+	var contentLenght int
+	if !lenExists {
+		contentLenght = 0
+	} else {
+		var err error
+		contentLenght, err = strconv.Atoi(len)
+		if err != nil {
+			contentLenght = 0
+		}
+	}
+
 	return RequestHeaderLines{
 		Host:             headerFields["host"],
 		ConnectionPersis: connectionIsPersistant,
 		UserAgent:        headerFields["user-agent"],
 		AcceptLanguage:   headerFields["accept"],
+		ContentLen:       contentLenght,
 	}, err
 }
 

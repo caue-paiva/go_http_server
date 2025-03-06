@@ -38,12 +38,12 @@ func ErrorResponse(errorCode datastructs.HttpError, httpVersion float64, respons
 	return response
 }
 
-func SucessResponse(httpVersion float64, responseType string, responseContent []byte) string {
+func SucessResponse(httpVersion float64, responseType datastructs.ContentType, responseContent []byte) string {
 	var response = ""
 
 	response += (fmt.Sprintf("HTTP/%.1f", httpVersion) + " 200 OK\r\n")
 	response += fmt.Sprintf("Date: %s\r\n", time.Now().UTC().Format(time.RFC1123))
-	response += ("Content-Type: " + responseType + "\r\n")
+	response += ("Content-Type: " + string(responseType) + "\r\n")
 	response += ("Content-Length: " + fmt.Sprintf("%d", len(responseContent)) + "\r\n")
 	response += "\r\n" //line break
 
