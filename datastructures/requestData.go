@@ -30,6 +30,7 @@ type RequestHeaderLines struct {
 	ConnectionPersis bool
 	UserAgent        string
 	AcceptLanguage   string
+	ContenType       ContentType
 	ContentLen       int
 }
 
@@ -76,7 +77,7 @@ func ParseRequestHeaders(headers []string, httpVersion float64) (RequestHeaderLi
 	}
 
 	var connectionIsPersistant bool
-	connectAction, ConnExists := headerFields["Connection"]
+	connectAction, ConnExists := headerFields["connection"]
 
 	if !ConnExists { //conexão não especificada, usar default
 		connectionIsPersistant = defaultConnectionIsPersistant(httpVersion)
@@ -86,7 +87,7 @@ func ParseRequestHeaders(headers []string, httpVersion float64) (RequestHeaderLi
 		connectionIsPersistant = true
 	}
 
-	len, lenExists := headerFields["Content-Length"] //parsing no content len
+	len, lenExists := headerFields["content-length"] //parsing no content len
 	var contentLenght int
 	if !lenExists {
 		contentLenght = 0
@@ -103,6 +104,7 @@ func ParseRequestHeaders(headers []string, httpVersion float64) (RequestHeaderLi
 		ConnectionPersis: connectionIsPersistant,
 		UserAgent:        headerFields["user-agent"],
 		AcceptLanguage:   headerFields["accept"],
+		ContenType:       ContentType(headerFields["content-type"]),
 		ContentLen:       contentLenght,
 	}, err
 }

@@ -30,8 +30,9 @@ func runServer() {
 		req = msg.Request
 		conn = msg.Conn
 
-		content, _ := services.RouteRequest(req.FirstLine, req.Body) //routing na mensagem
-		var contentType datastructs.ContentType = services.GetResponseType(req.FirstLine.EndPoint)
+		//fmt.Println(req)
+		content, _ := services.RouteRequest(req.FirstLine, req.Body, req.Headers.ContenType) //routing na mensagem
+		var contentType datastructs.ContentType = services.GetResponseType(req.FirstLine.Method, req.FirstLine.EndPoint)
 
 		var response string = services.SucessResponse(req.FirstLine.HttpVersion, contentType, content)
 
@@ -45,7 +46,7 @@ func runServer() {
 		if closeErr != nil {
 			fmt.Println(closeErr.Error())
 		}
-		fmt.Printf("Request conectada do endereço %v for servida com sucesso. A rota foi %v e o tipo de contéudo servido foi %v \n", addr, req.FirstLine.EndPoint, contentType)
+		fmt.Printf("Request conectada do endereço %v for servida com sucesso. A rota foi %v e o tipo de contéudo Retornado foi %v \n", addr, req.FirstLine.EndPoint, contentType)
 
 	}
 

@@ -19,7 +19,10 @@ func contentTypeFromExtension(fileExtension string) datastructs.ContentType {
 	}
 }
 
-func GetResponseType(route string) datastructs.ContentType {
+func GetResponseType(method datastructs.HttpMethod, route string) datastructs.ContentType {
+	if method != datastructs.GET { //caso não seja request de get, retorna uma string
+		return datastructs.TextPlain
+	}
 	fileExten := filepath.Ext(route)
 	return contentTypeFromExtension(fileExten)
 }

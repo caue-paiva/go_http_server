@@ -8,22 +8,6 @@ import (
 	"path/filepath"
 )
 
-// le diretório com os arquivos estáticos a serem servidos e retorna um mapa com o nome do arquivo e seu conteúdo
-/*TODO
-func ReadContentDir() (map[string]string, error) {
-
-	//dirContents, err := os.ReadDir(contentFolder)
-	if err != nil {
-		return map[string]string{}, errors.New("falha ao ler diretório de conteúdo")
-	}
-
-	// for _, content := range dirContents {
-
-	// }
-
-}
-*/
-
 // lida com operações GET, le arquivos dos diretórios locais
 func getHandler(finalPath string) ([]byte, error) {
 	bytes, err := os.ReadFile(finalPath)
@@ -35,12 +19,54 @@ func getHandler(finalPath string) ([]byte, error) {
 	return bytes, nil
 }
 
-func putHandler(finalPath string, content string) error {
-	return os.WriteFile(finalPath, []byte(content), os.FileMode(os.O_RDWR))
+// caso o arquivo não tenha uma extensão, add ele de acordo com o tipo do conteudo
+func addExtension(filePath string, contentType datastructs.ContentType) string {
+	var extension string
+
+	switch contentType {
+	case datastructs.TextPlain:
+		extension = ".txt"
+	case datastructs.TextHTML:
+		extension = ".html"
+	case datastructs.TextCSS:
+		extension = ".css"
+	case datastructs.TextJavaScript:
+		extension = ".js"
+	case datastructs.ApplicationJSON:
+		extension = ".json"
+	case datastructs.ApplicationXML:
+		extension = ".xml"
+	case datastructs.ApplicationForm:
+		extension = ".form"
+	case datastructs.MultipartForm:
+		extension = ".form"
+	case datastructs.ImageJPEG:
+		extension = ".jpg"
+	case datastructs.ImagePNG:
+		extension = ".png"
+	case datastructs.ImageGIF:
+		extension = ".gif"
+	case datastructs.ImageSVG:
+		extension = ".svg"
+	default:
+		extension = ".txt" // Default to text extension if content type is unknown
+	}
+
+	return filePath + extension
+}
+
+func putHandler(finalPath string, content string, contentType datastructs.ContentType) error {
+	ext := filepath.Ext(finalPath)
+	fmt.Println(ext)
+	if ext == "" { //não tem extensao
+		finalPath = addExtension(finalPath, contentType)
+	}
+
+	return os.WriteFile(finalPath, []byte(content), 0644)
 }
 
 // Faz o routing da request e tenta realizar a operação ditada pelo verbo HTTP, retornando uma string com o contéudo
-func RouteRequest(requestInfo datastructs.RequestLine, requestBody string) ([]byte, error) {
+func RouteRequest(requestInfo datastructs.RequestLine, requestBody string, contentType datastructs.ContentType) ([]byte, error) {
 	var route string = requestInfo.EndPoint
 	var method datastructs.HttpMethod = requestInfo.Method
 	finalPath, _ := filepath.Abs("content/" + route)
@@ -51,7 +77,7 @@ func RouteRequest(requestInfo datastructs.RequestLine, requestBody string) ([]by
 		data, err := getHandler(finalPath)
 		return data, err
 	case datastructs.PUT:
-		err = putHandler(finalPath, requestBody)
+		err = putHandler(finalPath, requestBody, contentType)
 		return []byte{}, err
 	default:
 		return []byte{}, fmt.Errorf("método http da request: %s, ainda não foi implementado", method)

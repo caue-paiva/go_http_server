@@ -40,6 +40,7 @@ func readClientRequest(conn net.Conn) (datastructs.RequestInfo, error) {
 	}
 
 	headers, parseErr := datastructs.ParseRequestHeaders(headerLines, reqLine.HttpVersion)
+
 	if parseErr != nil {
 		return datastructs.RequestInfo{}, fmt.Errorf("falha ao dar parsing nas linhas dos Headers")
 	}
